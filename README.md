@@ -26,7 +26,7 @@ _ = [print('-> {}'.format(ind), end=' ') for ind in short_path]
 fig, ax = plt.subplots(figsize=(5, 5))
 mt.plot_points_simple(ax, points, [short_path], ['Shortest Path'])
 ```
-![png](output_7_1.png)
+![png](img/output_7_1.png)
 
 **Varying the Minkowski distance p value** and visualising the results.
 6
@@ -54,7 +54,7 @@ for points, ax in zip(ensemble_points, axes.flatten()):
 
 plt.tight_layout()
 ```
-![png](output_9_3.png)
+![png](img/output_9_3.png)
 
 
 
