@@ -103,7 +103,7 @@ def plot_path_points(ax, points=[], paths=[], path_labels=[]):
 def shortest_path(connections):
 
     n = connections.shape[0]
-    _, prev = djikstre(connections)
+    dist, prev = djikstre(connections)
     u = n-1
 
     path=[]
@@ -113,9 +113,9 @@ def shortest_path(connections):
         u = prev[u]
         path.append(u)
         
-    return path
+    return path, dist[n-1]
 
-def points_between(points, path1, path2=np.array([[0, 1pa], [0, 1]])):
+def points_between(points, path1, path2=np.array([[0, 1], [0, 1]])):
     """
     Returns the coordinates and boolean indices for points between the two paths.
     Takes the paths as points
