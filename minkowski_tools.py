@@ -101,7 +101,9 @@ def plot_path_points(ax, points=[], paths=[], path_labels=[]):
     return ax
 
 def shortest_path(connections):
-
+    """
+    TODO: make the function take start and end indices
+    """
     n = connections.shape[0]
     dist, prev = djikstre(connections)
     u = n-1
@@ -134,3 +136,103 @@ def path_angles(path):
     dys = path[1, :-1]-path[1, 1:]
     path_angles = np.arctan(dys/dxs)
     return path_angles
+
+def longest_path(connections):
+    """
+    TODO: make the function take start and end indices
+    """
+    n = connections.shape[0]
+    dist, prev = djikstre(-1*connections)
+    u = n-1
+
+    path=[]
+    path.append(u)
+
+    while u != n-2:
+        u = prev[u]
+        path.append(u)
+        
+    return path, -1*dist[n-1]
+
+
+def bi_djikstre(connection_mat):
+    """
+    Not working. Stopping conditions are incorrect.
+    
+    Returns dictionaries with;
+    -shortest distances to the nodes from the source, [0, 0] (labelled by index).
+    -previous node for shortest path from the source, [0, 0] (labelled by index).
+    Untested for disconnected graphs (from the source, [0, 0])
+    
+    Developed to become a bidirectional search.
+    """
+    n = connection_mat.shape[0]
+    
+    dist_f, prev_f = {}, {}
+    Q_f  = list(range(n))
+    
+    dist_b, prev_b = {}, {}
+    Q_b  = list(range(n))
+    
+    for i in Q_f:
+        dist_f[i] = np.inf
+    dist_f[n-2] = 0.0
+    
+    for i in Q_b:
+        dist_b[i] = np.inf
+    dist_b[n-1] = 0.0
+    
+    done_f = []
+    done_b = []
+    
+    while not (set(done_b) & set(done_f)):
+        
+        for di, dist, prev, Q, done, connections, end in zip(['A', 'B'],[dist_b, dist_f], [prev_b, prev_f], [Q_b, Q_f], [done_b, done_f], [connection_mat.transpose(), connection_mat], [' ','\n']):
+#             print(di)
+            min_dist = min([dist[key] for key in Q])
+            u = [key for key in Q if dist[key] == min_dist][0]
+#             print(u, di, end=end)
+
+            for v in np.nonzero(connections[:, u])[0]:
+#                 print(np.nonzero(connections[:, u])[0])
+                alt = dist[u]+connections[v, u]
+#                 print(dist)
+#                 print(dist[u], alt)
+
+                if alt < dist[v]:
+                    dist[v] = alt
+                    prev[v] = u
+#                     print('added to prev', di, prev)
+#                     print('added to dist', di, dist)
+                    
+            done.append(u)
+            Q.remove(u)
+                
+    meeting_point = list(set(done_b) & set(done_f))[0]
+    
+#     print('Meeting point:', meeting_point)
+
+    path_b=[]
+    path_f=[]
+
+#     path_f.append(u)
+    
+    u = meeting_point
+    
+    while u != n-1:
+#         print(u)
+        u = prev_b[u]
+        path_b.append(u)
+        
+    u = meeting_point
+
+    while u != n-2:
+#         print(u)
+        u = prev_f[u]
+        path_f.append(u)
+    
+    full_path =path_b[::-1]
+    full_path.append(meeting_point)
+    full_path.extend(path_f)
+    
+    return full_path
