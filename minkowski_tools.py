@@ -237,26 +237,26 @@ def bi_djikstre(connection_mat):
     
     return full_path
 
-def get_connections_ND(points, radius=.1, pval=2):
-    """
-    Finds all the connections between the points given. Connections must satisfy:
-    -box square direction (i.e. all coords in _to_ greater than in _from_) - here generalise to N coords
-    -distance separated nodes less that 'radius' (according to Minkowski distance with p='pval')
-    Resulting graph is directed and acyclic
+# def get_connections_ND(points, radius=.1, pval=2):
+#     """
+#     Finds all the connections between the points given. Connections must satisfy:
+#     -box square direction (i.e. all coords in _to_ greater than in _from_) - here generalise to N coords
+#     -distance separated nodes less that 'radius' (according to Minkowski distance with p='pval')
+#     Resulting graph is directed and acyclic
 
-    N taken from the dimension of points.
-    """
+#     N taken from the dimension of points.
+#     """
 
-    radp = radius**pval
+#     radp = radius**pval
 
-    x_rows, x_cols = np.meshgrid(points[0, :], points[0, :])
-    y_rows, y_cols = np.meshgrid(points[1, :], points[1, :])
-    x_diffs = (x_cols - x_rows)
-    y_diffs =  (y_cols - y_rows)
-    distsp = (x_diffs**pval + y_diffs**pval)*(x_diffs>0)*(y_diffs>0)
-    connections = (((distsp<radp)*distsp)**(1/pval))*(x_diffs>0)*(y_diffs>0)
+#     x_rows, x_cols = np.meshgrid(points[0, :], points[0, :])
+#     y_rows, y_cols = np.meshgrid(points[1, :], points[1, :])
+#     x_diffs = (x_cols - x_rows)
+#     y_diffs =  (y_cols - y_rows)
+#     distsp = (x_diffs**pval + y_diffs**pval)*(x_diffs>0)*(y_diffs>0)
+#     connections = (((distsp<radp)*distsp)**(1/pval))*(x_diffs>0)*(y_diffs>0)
 
-    return(np.nan_to_num(connections))
+#     return(np.nan_to_num(connections))
 
 def get_connections_ND(points, radius=.1, pval=2):
     """
@@ -279,3 +279,31 @@ def get_connections_ND(points, radius=.1, pval=2):
     connections = (((distsp<radp)*distsp)**(1/pval))*box_cube_condition
 
     return(np.nan_to_num(connections))
+
+
+def box_counting(points, dists={}, samples=100, connections=[], radius=[], pval=[], weighted=False):
+
+    if not (connections or dists):
+        print('Getting connections')
+        connections = mt.get_connections_ND(points, radius, pval)
+
+    if not (weighted or dists):
+        connections = connections.astype(bool).astype(int)
+        print('Not weighted')
+            
+    if not dists:
+        print('Getting dists')
+        dists, _ = mt.djikstre(connections)
+        
+    results = []
+    options = [key for key in dists.keys() if np.isfinite(dists[key])]
+
+    for _ in range(samples):
+        sample_point = np.random.choice(options)
+        options.remove(sample_point)
+
+        count = np.sum((points[1, :] < points[1, sample_point])*(points[0, :] < points[0, sample_point]))
+        
+        results.append([dists[sample_point], count])
+        
+    return np.array(results).transpose()
