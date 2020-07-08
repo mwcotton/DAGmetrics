@@ -110,12 +110,17 @@ def shortest_path(connections):
 
     path=[]
     path.append(u)
+    
+    if prev.get(u):
+        while u != n-2:
+            u = prev[u]
+            path.append(u)
+            
+        return path, dist[n-1]
 
-    while u != n-2:
-        u = prev[u]
-        path.append(u)
-        
-    return path, dist[n-1]
+    else:
+        return [], 0.0
+    
 
 def points_between(points, path1, path2=np.array([[0, 1], [0, 1]])):
     """
@@ -148,11 +153,15 @@ def longest_path(connections):
     path=[]
     path.append(u)
 
-    while u != n-2:
-        u = prev[u]
-        path.append(u)
-        
-    return path, -1*dist[n-1]
+    if prev.get(u):
+        while u != n-2:
+            u = prev[u]
+            path.append(u)
+            
+        return path, -1*dist[n-1]
+
+    else:
+        return [], 0.0
 
 
 def bi_djikstre(connection_mat):
