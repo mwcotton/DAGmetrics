@@ -36,13 +36,16 @@ results = [5.41254e-6, 0.0000182211, 0.0000499262, 0.000116795, 0.000241366, \
 0.75896, 0.760749, 0.762518, 0.764267, 0.765999, 0.767711, 0.769406, \
 0.771082, 0.772741, 0.774382, 0.776005, 0.777612, 0.779202, 0.780776, \
 0.782332, 0.783873, 0.785398]
-x = np.arange(0.1, 2.01, 0.01)
+
+headers = 'p', 'r', 'n', 'short_lengthBool', 'long_lengthBool', 'short_length', 'long_length', 'short_pathBoolpoints', 'long_pathBoolpoints', 'short_pathpoints', 'long_pathpoints'
+
+# x = np.arange(0.1, 2.01, 0.01)
 
 kernel_area2D = scipy.interpolate.CubicSpline(pvals, results)
 
 def norm_kernel_2D(pval, area):
     """
-    Returns the radius required to make a kernel descirbed by pval have the desired input area
+    Returns the 'radius' required to make a kernel descirbed by pval have the desired input area
     (Interpolated between 0.1 and 2, therefore vals outside this may have large uncertainties).
     """
     area_r_1 = kernel_area2D(pval)
@@ -365,3 +368,73 @@ def box_counting(points, dists={}, samples=100, connections=[], radius=[], pval=
         results.append([dists[sample_point], count])
         
     return np.array(results).transpose()
+
+def points_str(string):
+
+    clean = string.replace(']', '').replace(' ', '').replace('[', '')
+    coords_flat = np.array(clean.split(','), dtype=float)
+    
+    return coords_flat.reshape(-1, 2).transpose()
+
+def separate_simulations(ns, ps, rs, savename, verbose=True):
+    """
+    savename is a text file
+    """
+    if verbose:
+
+        for n, p, r in zip(ns, ps, rs):
+            
+            print('n-{}, p-{}, r-{}'.format(n, p, r))
+            
+            rand_points = np.random.uniform(size=(2, n-2))
+            edge_points = np.array([[0.0, 1.0],[0.0, 1.0]])
+            points = np.concatenate((rand_points, edge_points), axis=1)
+            
+            print('Generated points.', end = '')
+            
+            connections = get_connections(points, pval=p, radius=r)
+
+            print('Got connections.')
+            
+            print('Getting paths.', end = '...')
+            
+            print('Longest.', end = '...')
+            long_pathBool, long_lengthBool = longest_path(connections.astype(bool))
+            long_path, long_length = longest_path(connections)
+
+            print('Shortest.', end = '...')
+            short_pathBool, short_lengthBool = shortest_path(connections.astype(bool))
+            short_path, short_length = shortest_path(connections)
+
+            short_pathBoolpoints, long_pathBoolpoints, short_pathpoints, long_pathpoints = [[list(points[:, u]) for u in indexes] for indexes in [short_pathBool, long_pathBool, short_path, long_path]]
+
+            print('Saving file -> ' + savename)
+            file1 = open(savename,"a") 
+
+            file1.writelines('{} - {} - {} - {} - {} - {} - {} - {} - {} - {} - {}\n'.format(p, r, n, short_lengthBool, long_lengthBool, short_length, long_length, short_pathBoolpoints, long_pathBoolpoints, short_pathpoints, long_pathpoints))
+            file1.close()
+            
+    else:
+
+        for n, p, s in zip(ns, ps, rs):
+
+            rand_points = np.random.uniform(size=(2, n-2))
+            edge_points = np.array([[0.0, 1.0],[0.0, 1.0]])
+            points = np.concatenate((rand_points, edge_points), axis=1)
+
+            connections = get_connections(points, pval=p, radius=r)
+
+            long_pathBool, long_lengthBool = longest_path(connections.astype(bool))
+            long_path, long_length = longest_path(connections)
+
+            short_pathBool, short_lengthBool = shortest_path(connections.astype(bool))
+            short_path, short_length = shortest_path(connections)
+
+            short_pathBoolpoints, long_pathBoolpoints, short_pathpoints, long_pathpoints = [[list(points[:, u]) for u in indexes] for indexes in [short_pathBool, long_pathBool, short_path, long_path]]
+
+            file1 = open(savename,"a") 
+
+            file1.writelines('{} - {} - {} - {} - {} - {} - {} - {} - {} - {} - {}\n'.format(p, r, n, short_lengthBool, long_lengthBool, short_length, long_length, short_pathBoolpoints, long_pathBoolpoints, short_pathpoints, long_pathpoints))
+            file1.close()
+        
+    return True
