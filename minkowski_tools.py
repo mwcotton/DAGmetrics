@@ -271,6 +271,8 @@ def bi_djikstre(connection_mat):
     Untested for disconnected graphs (from the source, [0, 0])
     
     Developed to become a bidirectional search.
+
+    TODO: finish
     """
     n = connection_mat.shape[0]
     
@@ -425,6 +427,7 @@ def separate_simulations(ns, ps, rs, savename, verbose=True):
     """
     savename is a text file
     """
+    #TODO: find bug that occasionally does not find the shortest path
     if verbose:
 
         for n, p, r in zip(ns, ps, rs):
