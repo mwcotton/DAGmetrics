@@ -86,6 +86,12 @@ headers = 'p', 'r', 'n', 'short_lengthBool', 'long_lengthBool', 'short_length', 
 
 kernel_area2D = scipy.interpolate.CubicSpline(pvals, results)
 
+def r1_area2D(pval):
+    if pval < 7.45:
+        return kernel_area2D(pval)
+    else:
+        return (1-1/(pval*(pval+1))) #approximation of the integral for 
+
 def norm_kernel_2D(pval, area):
     """
     Returns the 'radius' required to make a kernel descirbed by pval have the desired input area
@@ -197,7 +203,7 @@ def plot_path_points(ax, points=[], paths=[], path_labels=[]):
 
     return ax
 
-def shortest_path(connections):
+def shortest_path_old(connections):
     """
     TODO: make the function take start and end indices
     """
@@ -239,7 +245,7 @@ def path_angles(path):
     path_angles = np.arctan(dys/dxs)
     return path_angles  
 
-def longest_path(connections):
+def longest_path_old(connections):
     """
     TODO: make the function take start and end indices
     """
@@ -486,3 +492,134 @@ def separate_simulations(ns, ps, rs, savename, verbose=True):
             file1.close()
         
     return True
+
+
+def longest_path(connection_mat):
+    """
+    TODO: make the function take start and end indices
+    Also: ensure that this works with the overall
+    """
+    
+    n = connection_mat.shape[0]
+    dist, prev = {}, {}
+    
+    for i in range(n):
+        dist[i] = -1*np.inf
+    dist[n-2] = 0
+        
+    for u in topo_sort(connection_mat):
+        for v in np.nonzero(connection_mat[:, u])[0]:
+            
+            alt = dist[u]+connection_mat[v, u]
+            
+            if alt > dist[v]:
+                dist[v] = alt
+                prev[v] = u
+   
+    u = n-1
+
+    path=[]
+    path.append(u)
+
+    if prev.get(u):
+        while u != n-2:
+            u = prev[u]
+            path.append(u)
+            
+    return path, dist[n-1]
+
+def shortest_path(connection_mat):
+    """
+    TODO: make the function take start and end indices
+    """
+
+    n = connection_mat.shape[0]
+    dist, prev = {}, {}
+    
+    for i in range(n):
+        dist[i] = np.inf
+    dist[n-2] = 0
+        
+    for u in topo_sort(connection_mat):
+        for v in np.nonzero(connection_mat[:, u])[0]:
+            
+            alt = dist[u]+connection_mat[v, u]
+            
+            if alt < dist[v]:
+                dist[v] = alt
+                prev[v] = u
+   
+    u = n-1
+    
+    path=[]
+    path.append(u)
+
+    if prev.get(u):
+        while u != n-2:
+            u = prev[u]
+            path.append(u)
+            
+        return path, dist[n-1]
+
+    else:
+        return [], 0.0
+
+def longest_path_with_ponits(connection_mat, points):
+    """
+    TODO: make the function take start and end indices
+    Also: ensure that this works with the overall
+    """
+    dist, prev = {}, {}
+    
+    for i in range(n):
+        dist[i] = -1*np.inf
+    dist[n-2] = 0
+        
+    for u in np.lexsort((points[0], points[1])):
+        for v in np.nonzero(connection_mat[:, u])[0]:
+            
+            alt = dist[u]+connection_mat[v, u]
+            
+            if alt > dist[v]:
+                dist[v] = alt
+                prev[v] = u
+   
+    u = n-1
+
+    path=[]
+    path.append(u)
+
+    if prev.get(u):
+        while u != n-2:
+            u = prev[u]
+            path.append(u)
+            
+    return path, dist[n-1]
+
+
+def topo_sort(connections):
+    
+    connection_mat = connections.copy()
+    n = len(connection_mat)
+    Q = list(range(n))
+    
+    order = []    
+    
+    while(len(Q)>0):
+        no_entry = np.where(np.sum(connection_mat, axis=1) == 0)[0]
+        for u in list(set(Q).intersection(set(no_entry))):
+            order.append(u)
+            connection_mat[:, u] =[0]*n
+            Q.remove(u)
+            
+    return order
+
+#     DAG PATH ALOG: algorithm dag-longest-path is input: Directed acyclic graph G output: Length of the longest path
+# length_to = array with |V(G)| elements of type int with default value 0
+
+# for each vertex v in topOrder(G) do
+#     for each edge (v, w) in E(G) do
+#         if length_to[w] <= length_to[v] + weight(G,(v, w)) then
+#             length_to[w] = length_to[v] + weight(G,(v, w))
+
+# return max(length_to[v] for v in V(G))
