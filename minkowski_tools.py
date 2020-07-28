@@ -214,7 +214,7 @@ def shortest_path_old(connections):
     path=[]
     path.append(u)
     
-    if prev.get(u):
+    if prev.get(u) is not None:
         while u != n-2:
             u = prev[u]
             path.append(u)
@@ -256,7 +256,7 @@ def longest_path_old(connections):
     path=[]
     path.append(u)
 
-    if prev.get(u):
+    if prev.get(u) is not None:
         while u != n-2:
             u = prev[u]
             path.append(u)
@@ -399,7 +399,7 @@ def box_counting(points, dists={}, samples=100, connections=[], radius=[], pval=
 
     if not (connections or dists):
         print('Getting connections')
-        connections = mt.get_connections_ND(points, radius, pval)
+        connections = get_connections_ND(points, radius, pval)
 
     if not (weighted or dists):
         connections = connections.astype(bool).astype(int)
@@ -407,7 +407,7 @@ def box_counting(points, dists={}, samples=100, connections=[], radius=[], pval=
             
     if not dists:
         print('Getting dists')
-        dists, _ = mt.djikstre(connections)
+        dists, _ = djikstre(connections)
         
     results = []
     options = [key for key in dists.keys() if np.isfinite(dists[key])]
@@ -521,7 +521,7 @@ def longest_path(connection_mat):
     path=[]
     path.append(u)
 
-    if prev.get(u):
+    if prev.get(u) is not None:
         while u != n-2:
             u = prev[u]
             path.append(u)
@@ -554,7 +554,7 @@ def shortest_path(connection_mat):
     path=[]
     path.append(u)
 
-    if prev.get(u):
+    if prev.get(u) is not None:
         while u != n-2:
             u = prev[u]
             path.append(u)
@@ -589,7 +589,7 @@ def longest_path_with_ponits(connection_mat, points):
     path=[]
     path.append(u)
 
-    if prev.get(u):
+    if prev.get(u) is not None:
         while u != n-2:
             u = prev[u]
             path.append(u)
