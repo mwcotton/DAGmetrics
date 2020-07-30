@@ -4,7 +4,7 @@ import minkowski_tools as mt
 
 # for edges in [5, 10, 20, 40]:
 
-savename =f'outputs/dimensionrun.txt'
+savename ='outputs/dimensionrun.txt'
 
 for p in [0.8, 1.2]:
 
