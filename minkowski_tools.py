@@ -623,3 +623,71 @@ def topo_sort(connections):
 #             length_to[w] = length_to[v] + weight(G,(v, w))
 
 # return max(length_to[v] for v in V(G))
+
+def smallest_r(points,  pval):
+    """
+    Find the smallest radius for the connections kernel required for the points to percolate for Minkowski pval.
+    """
+
+    N = points.shape[0]
+    n = points.shape[1]
+
+    meshed = [np.meshgrid(points[i, :], points[i, :]) for i in range(N)]
+    diffs = np.array([cols-rows for rows, cols in meshed])
+    box_cube_condition = (diffs > 0).all(axis=0)
+    distsp = (diffs**pval).sum(axis=0)
+
+    nolimit_connections = (distsp**(1/pval))*box_cube_condition
+    
+    maxes, prev = {}, {}
+
+    for i in range(n):
+        maxes[i] = np.inf
+    maxes[n-2] = 0
+    
+    for u in topo_sort(nolimit_connections): #can replace the top sort with points sorting
+        for v in np.nonzero(nolimit_connections[:, u])[0]:
+
+            alt = max(maxes[u], nolimit_connections[v, u])
+                        
+            if alt < maxes[v]:
+
+                maxes[v] = alt
+                prev[v] = u
+
+    u = n-1
+
+    path=[]
+    path.append(u)
+    
+    if prev.get(u) is not None:
+            while u != n-2:
+                u = prev[u]
+                path.append(u)
+
+            return path, maxes[n-1]
+
+    else:
+            return [], 0.0
+
+def separate_perc_r(ns, ps, savename, repeats=1):
+
+    for n, pval in zip(ns, ps):
+        for _ in range(repeats):
+            rand_points = np.random.uniform(size=(2, n-2))
+            edge_points = np.array([[0.0, 1.0],[0.0, 1.0]])
+            points = np.concatenate((rand_points, edge_points), axis=1)
+
+            min_path, r_min = smallest_r(points,  pval)
+            path_points = [list(points[:, u]) for u in min_path]
+
+            file1 = open(savename, "a") 
+
+            file1.writelines('{} - {} - {} -{}\n'.format(pval, n, r_min, path_points))
+            file1.close()
+
+    return True
+
+
+def separate_perc_n():
+    pass
