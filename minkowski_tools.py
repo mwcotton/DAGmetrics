@@ -638,6 +638,7 @@ def smallest_r(points,  pval):
     distsp = (diffs**pval).sum(axis=0)
 
     nolimit_connections = (distsp**(1/pval))*box_cube_condition
+    nolimit_connections = np.nan_to_num(nolimit_connections)
     
     maxes, prev = {}, {}
 
@@ -688,6 +689,98 @@ def separate_perc_r(ns, ps, savename, repeats=1):
 
     return True
 
+def perc_thresh_n(connections):
+
+    n = len(connections)
+    previous = {}
+
+    for ind in [n-2, n-1]:
+        previous[ind] = {ind}
+
+    if connections[n-1, n-2]:
+        previous[n-1].add(n-2)
+
+    no_points = 2
+
+    
+    while (n-2) not in previous[n-1] and no_points<n:
+        
+        no_points += 1
+        
+        upto = n-no_points
+        previous[upto] = {upto}
+
+        for node_to_current in np.nonzero(connections[n-no_points, n-no_points:])[0]:
+            previous[upto].update(previous[upto + node_to_current])
+
+        nodes_from = set(upto + np.nonzero(connections[upto:, upto])[0])
+
+        for other_node in range(upto, n):
+            if previous[other_node].intersection(nodes_from):
+                previous[other_node].update(previous[upto])
+
+    return no_points
 
 def separate_perc_n():
     pass
+
+
+def greedy_path(connections, select_func=np.argmax, sink=None, source=None):
+
+    included = relevant_points(connections, sink)
+
+    n = len(connections)
+    
+    if sink is None:
+            sink = n-1
+    
+    print(included)
+    print(included[sink])
+    
+    if not included[sink]:        
+        return [], 0
+    
+    if source is None:
+        source = n-2
+
+    node = source
+
+    path_length = 0
+    path = []
+    path.append(node)
+
+    while node != sink:
+        
+        options = connections[:, node]
+        
+        new_node = select_func(np.ma.masked_where(options == 0, options, copy=False))
+
+        path.append(new_node)
+        path_length += connections[node, new_node]
+
+        node = new_node
+
+    return path, path_length
+
+
+def relevant_points(connections, sink=None):
+    
+    n = len(connections)
+    
+    if sink is None:
+        sink = n-1
+    
+    next_time = np.zeros(shape=n, dtype=int)
+    next_time[n-1] = 1
+    
+    included = np.zeros(shape=n, dtype=int)
+    not_included = np.ones(shape=n, dtype=int)
+
+    while(np.sum(next_time)):
+        
+        included += next_time
+        not_included -= next_time
+
+        next_time = connections[np.where(next_time)].sum(axis=0).astype(bool).astype(int)*not_included
+
+    return included
