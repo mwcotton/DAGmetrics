@@ -725,17 +725,19 @@ def separate_perc_n():
     pass
 
 
-def greedy_path(connections, select_func=np.argmax, sink=None, source=None):
-
-    included = relevant_points(connections, sink)
+def greedy_path(connections, select_func=np.argmax, sink=None, source=None, included=None):
+    """
+    example of a select function:
+    def rand_select(arr):
+        return np.random.choice(np.where(arr)[0])
+    """
+    if included is None:
+        included = relevant_points(connections, sink)
 
     n = len(connections)
     
     if sink is None:
-            sink = n-1
-    
-    print(included)
-    print(included[sink])
+        sink = n-1
     
     if not included[sink]:        
         return [], 0
@@ -751,12 +753,12 @@ def greedy_path(connections, select_func=np.argmax, sink=None, source=None):
 
     while node != sink:
         
-        options = connections[:, node]
+        options = connections[:, node]*included
         
         new_node = select_func(np.ma.masked_where(options == 0, options, copy=False))
 
         path.append(new_node)
-        path_length += connections[node, new_node]
+        path_length += connections[new_node, node]
 
         node = new_node
 
@@ -771,7 +773,7 @@ def relevant_points(connections, sink=None):
         sink = n-1
     
     next_time = np.zeros(shape=n, dtype=int)
-    next_time[n-1] = 1
+    next_time[sink] = 1
     
     included = np.zeros(shape=n, dtype=int)
     not_included = np.ones(shape=n, dtype=int)
@@ -784,3 +786,23 @@ def relevant_points(connections, sink=None):
         next_time = connections[np.where(next_time)].sum(axis=0).astype(bool).astype(int)*not_included
 
     return included
+
+def demonstrate(points, connections, ax=None):
+    """
+    Quick function to hepl visualising (mainly for debugging).
+    """
+
+    n = connections.shape[0]
+
+    if ax is None:
+        ax = plt.gca()
+
+    ax.plot()
+
+    ax.scatter(*points, c='k', alpha=.2)
+    [ax.annotate(i, (points[0, i], points[1, i])) for i in range(n)]
+
+    for i in range(n):
+        for j in range(n):
+            if connections[i, j]:
+                ax.plot([points[0, i], points[0, j]], [points[1, i], points[1, j]], 'k', alpha=0.2)
