@@ -5,7 +5,7 @@
 module load anaconda3/personal
 
 cp $HOME/minkowskitools.py $TMPDIR
-cp $HOME/perc_r/perc_r.py $TMPDIR
+cp $HOME/lim_scale/lim_scale.py $TMPDIR
 
 anaconda-setup
 
@@ -14,6 +14,6 @@ conda install numpy
 
 conda install matplotlib
 
-python3 $HOME/perc_r/perc_r.py
+python3 $HOME/lim_scale/lim_scale.py
 
-cp * $HOME/perc_r
+cp * $HOME/lim_scale

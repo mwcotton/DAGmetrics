@@ -5,7 +5,9 @@
 module load anaconda3/personal
 
 cp $HOME/minkowskitools.py $TMPDIR
-cp $HOME/perc_r/perc_r.py $TMPDIR
+cp $HOME/perc_n/perc_n.py $TMPDIR
+
+# mkdir $WORK/perc_r
 
 anaconda-setup
 
@@ -14,6 +16,6 @@ conda install numpy
 
 conda install matplotlib
 
-python3 $HOME/perc_r/perc_r.py
+python3 $HOME/perc_n/perc_n.py
 
-cp * $HOME/perc_r
+cp * $WORK/perc_n
