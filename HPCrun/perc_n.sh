@@ -7,8 +7,6 @@ module load anaconda3/personal
 cp $HOME/minkowskitools.py $TMPDIR
 cp $HOME/perc_n/perc_n.py $TMPDIR
 
-# mkdir $WORK/perc_r
-
 anaconda-setup
 
 conda search numpy
