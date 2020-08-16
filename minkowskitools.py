@@ -521,6 +521,9 @@ def longest_path(connection_mat):
     path=[]
     path.append(u)
 
+    if prev.get(u) is None:
+        return [], 0
+
     if prev.get(u) is not None:
         while u != n-2:
             u = prev[u]
@@ -771,11 +774,11 @@ def greedy_path(connections, select_func=np.argmax, sink=None, source=None, incl
     if sink is None:
         sink = n-1
     
-    if not included[sink]:        
-        return [], 0
-    
     if source is None:
         source = n-2
+
+    if included[source] == 0:
+        return [], 0
 
     node = source
 
@@ -821,7 +824,7 @@ def relevant_points(connections, sink=None):
 
 def demonstrate(points, connections, ax=None):
     """
-    Quick function to hepl visualising (mainly for debugging).
+    Quick function to help visualising (mainly for debugging).
     """
 
     n = connections.shape[0]
@@ -859,8 +862,8 @@ def all_paths(p, r, n):
 
     paths.append(greedy_path(connections, select_func=np.argmin, source=n-2, sink=n-1, included=forward_included)[0])
     paths.append(greedy_path(connections, select_func=np.argmax, source=n-2, sink=n-1, included=forward_included)[0])
-    paths.append(greedy_path(connections.transpose(), select_func=np.argmin, source=n-1, sink=n-2, included=backward_included)[0])
-    paths.append(greedy_path(connections.transpose(), select_func=np.argmax, source=n-1, sink=n-2, included=backward_included)[0])
+    paths.append(greedy_path(connections.transpose(), select_func=np.argmin, source=n-1, sink=n-2, included=backward_included)[0][::-1])
+    paths.append(greedy_path(connections.transpose(), select_func=np.argmax, source=n-1, sink=n-2, included=backward_included)[0][::-1])
 
     short_met, long_met, short_net, long_net, lMin_F, lMax_F, lMin_B, lMax_B = [[list(points[:, u]) for u in indexes] for indexes in paths]
 
